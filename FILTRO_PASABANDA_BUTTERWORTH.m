@@ -1,5 +1,5 @@
-info = audioinfo('Yabu_mono.wav')
-[y,Fs] = audioread('Yabu_mono.wav');
+info = audioinfo('handel.wav')
+[y,Fs] = audioread('handel.wav');
 t = 0:seconds(1/Fs):seconds(info.Duration);
 t = t(1:end-1);
 %figure,plot(t,y);
@@ -17,22 +17,24 @@ P1(2:end-1) = 2*P1(2:end-1);
         title('Grafico de la transformada de Fourier de y(t)')
         xlabel('f (Hz)')
         ylabel('Magnitud de la TF')
+        
+%DETERMINACION DE PARAMETROS WN Y ORDEN DEL FILTRO N
+Wp=[400 1000]/(Fs/2);
+Ws=[100 1500]/(Fs/2);
+Rp=3;
+Rs=20;
+[n, Wn]=buttord(Wp, Ws, Rp,Rs);
 
-%DETERMINACION DE COEFICIENTES DEL FILTRO
-Wp=2000/(Fs/2);
-Ws=1500/(Fs/2);
-Rp=1;
-Rs=60;
-[n, Wn]=ellipord(Wp, Ws, Rp,Rs);
 
-%DEFINICION Y GRAFICO DE FILTRO PASABANDA ELIPTICO
-[b,a] = ellip(n,Rp,Rs,Wn, 'high');  %FRECUENCIA ESCOGIDA DE 301 A 5 KHz
+%DEFINICION Y GRAFICO DE FILTRO PASABANDA BUTTERWORTH--------COEFICIENTES
+[b,a] = butter(n,Wn);  
 [H,w] = freqz(b,a,512);   %frecuencia del filtro w (512 muestras)  H complejo (512 muestras)
 size(w)
 size(H)
 figure, plot(w*Fs/(2*pi),abs(H));
 xlabel('Frecuencia (Hz)'); ylabel('Respuesta en Frecuencia');
 grid;
+axis([0 3000 0 1.2]);
         %FILTRO APLICADO AL AUDIO ORIGINAL
         sf = filter(b,a,y);
         SF= fft(sf);
@@ -43,7 +45,7 @@ grid;
             %GRAFICO DE FILTRO APLICADO AL AUDIO
             f = Fs*(0:(L/2))/L;
             figure, plot(f,P1) 
-            title('fILTRO PASABANDA ELIPTICO APLICADO')
+            title('fILTRO PASABANDA BUTTERWORTH APLICADO')
             xlabel('f (Hz)')
             ylabel('Magnitud de la TF')
             sound(sf,Fs)
